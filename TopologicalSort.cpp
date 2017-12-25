@@ -156,20 +156,33 @@ void TopSort()
 			nowTerm = i;
 			break;
 		}
-	while (Remain())
+	vector<int> NodeToUpdate;
+	while (1)
 	{
-		nowNode = Remain();
-		visit[nowNode] = 1;
-		ans[nowTerm].push_back(nowNode);
-		for (int i = head[nowNode]; i; i = e[i].next)
-			Nodes[e[i].to].degree--;
-		numberOfterm[nowTerm]--;
-		if (numberOfterm[nowTerm] == 0)
-			nowTerm++;
-		if (nowTerm > 8)
+		NodeToUpdate.clear();
+		while (Remain())
 		{
-			cout << "Wrong!" << endl;
-			return;
+			nowNode = Remain();
+			visit[nowNode] = 1;
+			ans[nowTerm].push_back(nowNode);
+			//for (int i = head[nowNode]; i; i = e[i].next)
+				//Nodes[e[i].to].degree--;
+			NodeToUpdate.push_back(nowNode);
+			numberOfterm[nowTerm]--;
+			if (numberOfterm[nowTerm] == 0)
+				nowTerm++;
+			if (nowTerm > 8)
+			{
+				cout << "Wrong!" << endl;
+				return;
+			}
+		}
+		if (NodeToUpdate.empty())
+			break;
+		for (int j = 0; j < NodeToUpdate.size(); j++)
+		{
+			for (int i = head[NodeToUpdate[j]]; i; i = e[i].next)
+				Nodes[e[i].to].degree--;
 		}
 	}
 	for (int i = 1; i <= 8; i++)
