@@ -1,4 +1,4 @@
-// TopologicalSort.cpp : ¶¨Òå¿ØÖÆÌ¨Ó¦ÓÃ³ÌĞòµÄÈë¿Úµã¡£
+// TopologicalSort.cpp : å®šä¹‰æ§åˆ¶å°åº”ç”¨ç¨‹åºçš„å…¥å£ç‚¹ã€‚
 //
 
 #include "stdafx.h"
@@ -19,7 +19,7 @@ struct edge
 class vertex
 {
 public:
-	int number, hours, term, degree;
+	int number, hours, term, degree, depth, deadline;
 	string name;
 	vertex(string number,string hours,string term,string name)
 	{
@@ -31,6 +31,8 @@ public:
 		this->hours = StrToInt(hours);
 		this->term = StrToInt(term);
 		this->degree = 0;
+		this->depth = 0;
+		this->deadline = 0;
 	}
 	vertex(){}
 	void IncDegree()
@@ -39,7 +41,7 @@ public:
 	}
 	void output()
 	{
-		cout << name << " " << number << " " << hours << " " << endl;
+		cout << name << endl;
 	}
 };
 vertex Nodes[100];
@@ -139,14 +141,31 @@ int Remain()
 	}
 	return 0;
 }
+int FindDDL(int u)
+{
+	if (head[u] == 0)
+		return 0;
+	int ans = 0;
+	for (int i = head[u]; i; i = e[i].next)
+		ans = max(FindDDL(e[i].to), ans);
+	return ans + 1;
+}
+bool cmp(vertex a, vertex b)
+{
+	if (a.depth == b.depth)
+		return a.deadline > b.deadline;
+	return a.depth < b.depth;
+}
 void TopSort()
 {
+	int special = 0;
 	for (int i = 1; i <= numberOfvertex; i++)
 		if (Nodes[i].term != 0)
 		{
 			ans[Nodes[i].term].push_back(i);
 			visit[i] = 1;
 			numberOfterm[Nodes[i].term]--;
+			special++;
 			continue;
 		}
 	int nowNode, nowTerm;
@@ -157,26 +176,19 @@ void TopSort()
 			break;
 		}
 	vector<int> NodeToUpdate;
+	int deep = 0;
 	while (1)
 	{
 		NodeToUpdate.clear();
 		while (Remain())
 		{
 			nowNode = Remain();
+			Nodes[nowNode].depth = deep;
+			Nodes[nowNode].deadline = FindDDL(nowNode);
 			visit[nowNode] = 1;
-			ans[nowTerm].push_back(nowNode);
-			//for (int i = head[nowNode]; i; i = e[i].next)
-				//Nodes[e[i].to].degree--;
 			NodeToUpdate.push_back(nowNode);
-			numberOfterm[nowTerm]--;
-			if (numberOfterm[nowTerm] == 0)
-				nowTerm++;
-			if (nowTerm > 8)
-			{
-				cout << "Wrong!" << endl;
-				return;
-			}
 		}
+		deep++;
 		if (NodeToUpdate.empty())
 			break;
 		for (int j = 0; j < NodeToUpdate.size(); j++)
@@ -185,9 +197,21 @@ void TopSort()
 				Nodes[e[i].to].degree--;
 		}
 	}
+	numberOfvertex -= special;
+	vertex Temp[100];
+	for (int i = 0; i < 100; i++)
+		Temp[i] = Nodes[i];
+	sort(Temp + 1, Temp + 1 + numberOfvertex, cmp);
+	for (int i = 1; i <= numberOfvertex; i++)
+	{
+		ans[nowTerm].push_back(Temp[i].number);
+		numberOfterm[nowTerm]--;
+		if (numberOfterm[nowTerm] == 0)
+			nowTerm++;
+	}
 	for (int i = 1; i <= 8; i++)
 	{
-		cout << "µÚ" << i << "Ñ§ÆÚ£º" << endl;
+		cout << "ç¬¬" << i << "å­¦æœŸï¼š" << endl;
 		for (int j = 0; j < ans[i].size(); j++)
 		{
 			cout << "\t";
